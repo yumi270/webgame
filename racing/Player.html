@@ -1,0 +1,375 @@
+<!--田由美-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Game</title>
+<style>
+	html {
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		position: relative;
+		background-image: linear-gradient(#1f7fdf,#ffffff);
+	}
+
+	.canvasbig {
+		position: absolute;
+		left: calc(50% - 260px);
+		top: calc(50% - 400px);
+		width: 520px;
+		height: 800px;
+		
+	}
+
+	.canvasdiv {
+		position: absolute;
+		cursor: pointer;
+		left: 180px;
+		top: 500px;
+		width: 163px;
+		height: 57px;
+		background-image: url(img/teststart.png);
+	}
+
+	.none {
+		display: none;
+	}
+    .show{
+		position: absolute;
+		left: 600px;
+		top: 0px;
+	}
+    input{
+        border:0;
+        outline:0;
+        border:solid 1px rgba(48, 44, 44, 0);
+        background-color:rgba(255, 0, 0, 0);
+        color:#FFFF00;
+        width:1000px;
+        font-size:50px;
+    }
+    .back{
+        position: absolute;
+		cursor: pointer;
+        top:0px;
+        left: 450px;
+    }
+</style>
+</head>
+<body>
+<div class="back">
+    <button><a href="file:///C:/Users/user/Desktop/%E6%88%91%E7%9A%84%E7%BD%91%E9%A1%B5/web/other.html">←　Back　</a></button>
+</div>
+
+<div class="canvasbig">
+    <div class="canvasdiv"></div>
+	<canvas width="520" height="800" id="canvas1"></canvas>
+</div>
+
+<div class="show">
+    <input class="input" id="timetext" readonly><br>
+</div>
+<script>
+var canvas1 = document.getElementById("canvas1");
+var context = canvas1.getContext('2d');
+var canvasbig = document.getElementsByClassName("canvasbig")[0];
+//背景画像
+var bg = new Image();
+    bg.src = "img/testroad.png";
+//titel
+var starthead = new Image();
+starthead.src = "img/titel.png";
+//mycar
+var mycar = new Image();
+　　mycar.src = "img/mycar.png";
+//移動範囲
+var mycarX = canvas1.width / 2,
+    mycarY = 730;
+//敌人
+var enemytime = 0,
+    enemyarr = [];
+var enemy1 = new Image();
+enemy1.src = `img/zhangai.png`;
+var enemy2 = new Image();
+enemy2.src = `img/xiangjiao.png`;
+var enemy3 = new Image();
+enemy3.src = `img/xingxing.png`;
+var enemy4 = new Image();
+enemy4.src = `img/guaiwu.png`;
+var enemyall = [enemy1, enemy2, enemy3, enemy4];
+//
+var mycar1boom = new Image();
+var myboomnum = 1,
+    myboomtime = 0;
+var obj = {
+    gamestart: 1,//ゲームstart
+    gameload: 0,//ゲームの読み込み
+    gamerun: 0,//読み込んたら始まり
+    gameover: 0,//ゲームover
+    dead: 0,//死
+    life: 3,//ライフ
+    bgy1: -854,//背景範囲
+    bgy2: 0,//背景範囲
+    bosstime: 0,//登場
+    bossattack: 0,//攻撃
+    //小背景
+    bgon: function () {
+        //绘制图像
+		//小框
+        //道路
+        context.drawImage(bg, 0, this.bgy1, 520, 854);
+        context.drawImage(bg, 0, this.bgy2, 520, 854);
+    },
+    //背景变换
+    //バックグラウンド変換
+    bgchange: function () {
+        //背景向下移动
+        //背景が下に移動します
+        this.bgy1++;
+        this.bgy2++;
+        if (this.bgy1 == 0) {
+            this.bgy1 = -854;
+            this.bgy2 = 0;
+        }
+    },
+    //三个生命
+    //三つのライフ
+    lifeing: function () {
+        //字体
+        //フォント
+        context.font = '50px  sans-serif';
+        //色
+        context.fillStyle = "#FFFF00";
+        //表示
+        context.fillText("LIFE:" + this.life, 55, 100);
+        //如果死了一次and我的炸弹序号等于9and生命大于0
+        if (obj.dead == 1 && myboomnum == 9 && obj.life > 0) {
+            obj.dead = 0;//dead等于0
+            enemytime = 0;//敌人时间等于0
+            enemyarr = [];//敌人
+            myboomnum = 1;//我的炸弹
+            myboomtime = 0;//我的炸弹时间
+            enemychangearr = [];//敌人的改变
+        //如果死了1次and 生命等于0
+        } else if (obj.dead == 1 && obj.life == 0) {
+            obj.gameover = 1;//游戏结束
+        }
+    },
+    //ゲームover
+    gameovering: function () {
+        if (obj.gameover == 1) {
+            obj.gamestart = 1; 
+            obj.gameover=0;     
+            obj.dead = 0;
+            obj.gamerun = 0;
+        }
+    },
+    //ゲームスタート
+    starting: function () {
+        //canvasdiv.className = "canvasdiv";//html的开始图片
+        obj.life = 3;//生命3
+        obj.time=0;//时间0
+        loadtime = 0;//加载时间
+        loadrect = 1;//加载矩形
+        mycarX = canvas1.width / 2;//移动范围
+        mycarY = 730;
+        enemytime = 0;//敌人时间++
+        enemyarr = [];//敌人记录存储库
+        bossattacktime = 0;//boss攻击时间
+        bossattacknum = 1;//boss攻击次数
+        myboomnum = 1;//我的轰炸
+        myboomtime = 0;//我的轰炸时间
+        context.drawImage(starthead, 60, 200);//titel
+    },
+    //loading
+    loading: function () {
+        loadtime++;//加载时间++
+        loadrect++;//加载矩形++
+        if (loadtime == 5) {//如果加载时间等于5
+            loadtime = 0;//加载时间等于0
+        }
+        //填充样式 颜色
+        context.fillStyle = 'white';
+        //填充矩形 背景大小
+        context.fillRect(0, 0, 520, 800);
+        //坡度=创建线性渐变
+        var gradient = context.createLinearGradient(20, 500, 397, 30);
+        //加载颜色
+        gradient.addColorStop(0, '#276ace');
+        //样式
+        context.fillStyle = gradient;
+        //矩形大小
+        context.fillRect(20, 500, loadrect, 30);
+    },
+
+    //--------------------------------------------------------------------------------
+    //マウスに必要
+    mycar: function (e) {
+		//MouseEvent.offsetX
+		//マウスの精度
+        mycarX = e.offsetX;
+        mycarY = e.offsetY;
+        //移動範囲
+        context.drawImage(mycar, mycarX - mycar.width / 2, mycarY - mycar.height / 2);
+    },
+    //--------------------------------------------------------------------------------
+    //敌人
+    enemy: function () {
+        enemytime++;//敌人时间++
+        //敌人序号=解析整数 随机1-4个敌人
+        var enemynum = parseInt(Math.random() * 4);
+        if (obj.bossattack == 1) {//boss攻击等于1
+            num = 20 //攻击次数20
+        }else{
+            num = 50//攻击次数50
+        }
+        if (enemytime >= num) {//敌人时间大于等于次数
+            //如果敌人序号等于3 乱数小于0.9
+            if (enemynum == 3 && Math.random() < 0.9) {
+                return;//返回
+            } else {
+                var enemylife = 1 //敌人的生命等于1
+                var changearr = [Math.random() * 520 - enemyall[enemynum].width / 2, -enemyall[enemynum].height, 0, enemynum, enemylife];
+                enemyarr.push(changearr);             
+                enemytime = 0;//敌人时间等于0
+            }
+        }
+    },
+    //敌人改变
+    //敵が変わる
+    enemychange: function () {
+        var result = [];
+        for (let i = 0; i < enemyarr.length; i++) {
+            if (enemyarr[i][1] + enemyarr[i][2] <= canvas1.height) {
+                context.drawImage(enemyall[enemyarr[i][3]], enemyarr[i][0], enemyarr[i][1] + enemyarr[i][2]);
+                if (enemyall[enemyarr[i][3]] == enemy4) {
+                    enemyarr[i][2] += 1.5;
+                } else {
+                    enemyarr[i][2] += 2;
+                }
+                result.push(enemyarr[i]);
+            }
+        }
+        enemyarr = result;
+    },
+    //
+    mycarboom: function () {
+        //如果死了一次
+        obj.dead = 1;
+        myboomtime++;
+        if (myboomtime >= 10) {       
+            myboomnum++;
+            myboomtime = 0;
+        }
+         if (myboomnum == 9) {
+            //初始化
+            obj.life -= 1;
+            enemyarr = [];
+            mycarX = canvas1.width / 2;
+            mycarY = 750;
+        }
+    },
+  //私の車が爆発した
+    mycarisbroke: function () {
+        for (let i = 0; i < enemyarr.length; i++) {
+            //毁坏条件
+            if (enemyarr[i][0] < mycarX - mycar.width / 2 && enemyarr[i][1] + enemyarr[i][2] < mycarY - mycar.height / 2 + mycar.height) {
+                if (enemyarr[i][0] + enemyall[enemyarr[i][3]].width > mycarX - mycar.width / 2 && enemyarr[i][1] + enemyarr[i][2] + enemyall[enemyarr[i][3]].height > mycarY - mycar.height / 2) {
+                    obj.mycarboom();
+                }
+            } else if (enemyarr[i][0] > mycarX - mycar.width / 2 && enemyarr[i][1] + enemyarr[i][2] < mycarY - mycar.height / 2 + mycar.height) {
+                if (enemyarr[i][0] < mycarX - mycar.width / 2 + mycar.width && enemyarr[i][1] + enemyarr[i][2] + enemyall[enemyarr[i][3]].height > mycarY - mycar.height / 2) {
+                    obj.mycarboom();
+                }
+            }
+        }
+    },
+}
+//上記のプログラムを実行します设置间隔
+setInterval(function () {
+    obj.bgon();//运行背景
+    obj.bgchange();//运行背景移动
+    if (obj.gamestart == 1&&obj.dead==0) {//如果开始等于1
+        obj.starting();//开始游戏
+    }
+    if (obj.gameload == 1) {//如果游戏加载等于1
+        if (loadrect >= 397) {//加载矩形大于等于397
+            obj.gameload = 0;//游戏加载再次等于0 
+            obj.gamerun = 1;//游戏开始等于1
+        }
+        obj.loading();//运行加载
+    }
+    if (obj.gamerun == 1) {//如果游戏开始等于1
+
+        if (obj.dead == 0) {//如果死亡等于0
+            //移动范围
+            context.drawImage(mycar, mycarX - mycar.width / 2, mycarY - mycar.height / 2);
+            if (obj.bosstime == 0 ) {
+                obj.enemy();//敌人出现
+                obj.enemychange();//敌人变换
+            }      
+        }
+        obj.mycarisbroke();  //毁坏     
+        obj.lifeing();//生命值
+        obj.gameovering();//游戏结束     
+    }
+}, 10)
+//-------------------------------------------------------------------
+//タイマー
+var minute,second;//时 分 秒
+    minute=second=0;//初始化
+var millisecond=0;//毫秒
+var int;
+var canvasdiv = document.getElementsByClassName("canvasdiv")[0];
+//点击
+//クリック
+canvasdiv.onclick = function () {
+    //开始图片
+    canvasdiv.className = "canvasdiv none";
+    //重新等于0 1
+    obj.gamestart = 0;
+    obj.gameload = 1;
+    int=setInterval(timer,50);//クリックしたらtimer実行する
+}
+function timer()//计时
+        {
+            millisecond=millisecond+50;
+            if(obj.gamestart == 0&&obj.gameload==0){
+            if(millisecond>=1000)
+            {
+                millisecond=0;
+                second=second+1;
+            }
+            if(second>=60)
+            {
+                second=0;
+                minute=minute+1;
+            }
+            
+            if(obj.gamerun==0&&obj.life==0){
+                millisecond=0;
+                second=0;
+            }
+            //表示
+            document.getElementById('timetext').value='TIME:'+minute+'分'+second+'秒';
+        }
+    }
+//--------------------------------------------------------------------------------
+
+//マウスのコード
+canvas1.onmousemove = function (e) {
+    //始まりが1に等しく、死んでいない場合
+    if (obj.gamerun == 1 && obj.dead == 0) {
+        obj.mycar(e);//205行 mycarに行く
+        this.style.cursor = "none";//マウスのポインタはレンダリングされません
+    } else {
+        this.style.cursor = "";//マウスのポインタ表示
+    }
+}
+</script>
+</body>
+</html>
